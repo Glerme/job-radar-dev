@@ -43,30 +43,57 @@ CASOS_ESCOPO = [
     # Mesma sigla ambígua, mas SEM capital brasileira reconhecida — tem que
     # continuar resolvendo Estados Unidos (a desambiguação não pode virar
     # "toda sigla de 2 letras é Brasil por padrão").
-    ("uf-ambigua-sem-capital-br-continua-eua", "Remote (Anytown, AL)", "", {"Estados Unidos"}),
+    (
+        "uf-ambigua-sem-capital-br-continua-eua",
+        "Remote (Anytown, AL)",
+        "",
+        {"Estados Unidos"},
+    ),
     # UF que não colide com sigla americana resolve direto, sem precisar
     # olhar a cidade.
     ("uf-nao-ambigua-resolve-direto", "Remoto (Recife, PE)", "", {"Brasil"}),
-
     # --- "Porto Alegre"/"Santiago do Cacém" virando Portugal/Chile por
     # substring (a chave batia dentro do nome da cidade brasileira/
     # portuguesa maior). Casamento de cidade isolada agora é por IGUALDADE
     # do candidato inteiro, não substring.
-    ("porto-alegre-com-uf-nao-vira-portugal", "Remoto (Porto Alegre, RS)", "", {"Brasil"}),
-    ("porto-alegre-sem-uf-nao-vira-portugal", "Remoto (Porto Alegre)", "Remoto", {"Brasil"}),
-    ("santiago-do-cacem-nao-vira-chile", "Remoto (Santiago do Cacém)", "Remoto", {"santiago do cacem"}),
+    (
+        "porto-alegre-com-uf-nao-vira-portugal",
+        "Remoto (Porto Alegre, RS)",
+        "",
+        {"Brasil"},
+    ),
+    (
+        "porto-alegre-sem-uf-nao-vira-portugal",
+        "Remoto (Porto Alegre)",
+        "Remoto",
+        {"Brasil"},
+    ),
+    (
+        "santiago-do-cacem-nao-vira-chile",
+        "Remoto (Santiago do Cacém)",
+        "Remoto",
+        {"santiago do cacem"},
+    ),
     # Anti-regressão: "Porto"/"Santiago" SOZINHOS continuam resolvendo pro
     # país de verdade — o fix é sobre substring dentro de nome composto,
     # não sobre desativar o reconhecimento da cidade.
     ("porto-sozinho-continua-portugal", "Remoto (Porto)", "Remoto", {"Portugal"}),
     ("santiago-sozinho-continua-chile", "Remoto (Santiago)", "Remoto", {"Chile"}),
-
     # --- Multimercado: "Remote - Brazil/LATAM" resolvia só pro primeiro
     # match (Brasil, que o perfil internacional REJEITA de propósito) e
     # perdia o LATAM (que ele aceita) — vaga válida sendo descartada.
-    ("multimercado-brazil-barra-latam", "Remote - Brazil/LATAM", "", {"Brasil", "LATAM"}),
-    ("multimercado-latam-mais-brazil", "Remote - LATAM + Brazil", "", {"Brasil", "LATAM"}),
-
+    (
+        "multimercado-brazil-barra-latam",
+        "Remote - Brazil/LATAM",
+        "",
+        {"Brasil", "LATAM"},
+    ),
+    (
+        "multimercado-latam-mais-brazil",
+        "Remote - LATAM + Brazil",
+        "",
+        {"Brasil", "LATAM"},
+    ),
     # --- Modalidade virando escopo geográfico falso: sem separador textual
     # ("Remote — ...") mas com `modalidade` confirmando remoto, `local`
     # inteiro virava candidato — incluindo o próprio vocabulário de
@@ -74,48 +101,66 @@ CASOS_ESCOPO = [
     # informado"), que não são nome de país nenhum.
     ("modalidade-remoto-sem-complemento-sem-escopo", "Remoto", "Remoto", set()),
     ("placeholder-nao-informado-sem-escopo", "Não informado", "Remoto", set()),
-    ("placeholder-nao-informado-com-remoto-sem-escopo", "Não informado (Remoto)", "Remoto", set()),
+    (
+        "placeholder-nao-informado-com-remoto-sem-escopo",
+        "Não informado (Remoto)",
+        "Remoto",
+        set(),
+    ),
     ("home-office-sem-escopo", "Home Office", "Remoto", set()),
-
     # --- Formato de cidade/região da Ibéria e LATAM comum no LinkedIn:
     # "Greater X", "X, X provincia" (província repete o nome da capital),
     # CEP espanhol na frente, "X Metropolitan Area" — nenhum batia por
     # igualdade exata antes da limpeza de ruído.
     ("greater-buenos-aires", "Greater Buenos Aires", "Remoto", {"Argentina"}),
     ("madrid-provincia-duplicado", "Madrid, Madrid provincia", "Remoto", {"Espanha"}),
-    ("cep-espanhol-na-frente", "08015, Barcelona, Barcelona provincia", "Remoto", {"Espanha"}),
-    ("medellin-metropolitan-area", "Medellín Metropolitan Area", "Remoto", {"Colômbia"}),
-
+    (
+        "cep-espanhol-na-frente",
+        "08015, Barcelona, Barcelona provincia",
+        "Remoto",
+        {"Espanha"},
+    ),
+    (
+        "medellin-metropolitan-area",
+        "Medellín Metropolitan Area",
+        "Remoto",
+        {"Colômbia"},
+    ),
     # --- Sigla de estado mexicano (formato "Cidade, SIGLA" igual ao
     # americano/brasileiro, mas nenhuma sigla mexicana estava cadastrada).
     ("sigla-mexico-nl-monterrey", "Monterrey, N.L.", "Remoto", {"México"}),
     ("sigla-mexico-cdmx", "Cuauhtémoc, CDMX", "Remoto", {"México"}),
-
     # --- Abrangência dentro do Brasil ("Barueri + 35 cidades") não é nome
     # de país estrangeiro — precisa cair em "sem restrição", não em
     # "escopo desconhecido" (que seria rejeitado pelo motivo errado).
     ("regiao-br-barueri-mais-cidades", "Remoto (Barueri + 35 cidades)", "", set()),
-
     # --- ANTI-REGRESSÃO CRÍTICA: vaga americana sem sigla de estado, só
     # texto livre ("Greater Seattle Area") tem que continuar caindo em
     # "escopo desconhecido" (não-vazio, rejeitável) — é o vazamento que
     # motivou boa parte do trabalho de escopo nesta sessão. NUNCA deveria
     # virar conjunto vazio (que combina_com() trata como "sem restrição,
     # aceita").
-    ("greater-seattle-area-continua-barrada", "Greater Seattle Area", "Remoto", {"seattle"}),
-
+    (
+        "greater-seattle-area-continua-barrada",
+        "Greater Seattle Area",
+        "Remoto",
+        {"seattle"},
+    ),
     # --- Sem restrição explícita.
     ("anywhere-sem-restricao", "Remote (Anywhere)", "", set()),
     ("worldwide-sem-restricao", "Remote - Worldwide", "", set()),
-
     # --- País fora do dicionário fica "escopo desconhecido" (rejeitável),
     # não "sem restrição" — filtro de mercado é allowlist, não blocklist.
     ("pais-nao-mapeado-fica-desconhecido", "Remote - Vietnam", "", {"vietnam"}),
-
     # --- Formatos básicos por extenso, incluindo país depois da cidade.
     ("us-only-classico", "Remote — US only", "", {"Estados Unidos"}),
     ("brazil-based", "Remote, Brazil based", "", {"Brasil"}),
-    ("pais-depois-da-cidade", "Remote - Florida, United States", "", {"Estados Unidos"}),
+    (
+        "pais-depois-da-cidade",
+        "Remote - Florida, United States",
+        "",
+        {"Estados Unidos"},
+    ),
 ]
 
 
@@ -137,29 +182,97 @@ CASOS_COMBINA_COM = [
     # Anti-regressão crítica (mesmo caso do teste de escopo, agora
     # end-to-end): vaga americana sem sigla de estado tem que ser barrada
     # no perfil internacional (que só aceita LATAM/Ibéria).
-    ("seattle-barrada-perfil-intl", "Senior Data Analyst", "Greater Seattle Area", "Remoto", PERFIL_INTL, False),
+    (
+        "seattle-barrada-perfil-intl",
+        "Senior Frontend Developer",
+        "Greater Seattle Area",
+        "Remoto",
+        PERFIL_INTL,
+        False,
+    ),
     # Remota sem mercado declarado: só passa se o TÍTULO afirmar idioma/
     # região (spanish/portuguese/latam/...) — regra adicionada depois que
-    # "Senior Data Analyst" remoto sem relação nenhuma com o mercado
+    # "Senior Frontend Developer" remoto sem relação nenhuma com o mercado
     # passava só por não ter nada que a rejeitasse.
-    ("spanish-speaking-sem-mercado-passa", "Spanish Speaking Data Analyst", "Remote", "Remoto", PERFIL_INTL, True),
-    ("data-analyst-latam-passa", "Data Analyst LATAM", "Remote", "Remoto", PERFIL_INTL, True),
-    ("sem-idioma-sem-mercado-barrada", "Senior Data Analyst", "Remote", "Remoto", PERFIL_INTL, False),
+    (
+        "spanish-speaking-sem-mercado-passa",
+        "Spanish Speaking Frontend Developer",
+        "Remote",
+        "Remoto",
+        PERFIL_INTL,
+        True,
+    ),
+    (
+        "frontend-dev-latam-passa",
+        "Frontend Developer LATAM",
+        "Remote",
+        "Remoto",
+        PERFIL_INTL,
+        True,
+    ),
+    (
+        "sem-idioma-sem-mercado-barrada",
+        "Senior Frontend Developer",
+        "Remote",
+        "Remoto",
+        PERFIL_INTL,
+        False,
+    ),
     # Mercado CONFIRMADO no texto dispensa o sinal de idioma no título — o
     # país hispanofalante já é o próprio sinal.
-    ("mercado-confirmado-dispensa-idioma-no-titulo", "Senior Data Analyst", "Remote - Espanha", "Remoto", PERFIL_INTL, True),
-
+    (
+        "mercado-confirmado-dispensa-idioma-no-titulo",
+        "Senior Frontend Developer",
+        "Remote - Espanha",
+        "Remoto",
+        PERFIL_INTL,
+        True,
+    ),
     # Perfil Brasil: cargo e cidade são checados em campos separados
     # (título vs. local) — cidade fora da lista aceita barra mesmo com
     # cargo batendo.
-    ("cidade-fora-da-lista-barrada", "Analista de Dados", "Nova York", "Presencial", PERFIL_BR, False),
-    ("cargo-fora-do-escopo-barrado", "Vendedor Externo", "Recife, PE", "Presencial", PERFIL_BR, False),
-    ("cargo-forte-cidade-aceita-passa", "Analista de Dados Pleno", "Recife, PE", "Presencial", PERFIL_BR, True),
-    # keywords_ambiguo (ex: "Business Analyst") só conta com qualificador
-    # de dados junto no título — sozinho é ruído de outra área (RH,
-    # finanças).
-    ("cargo-ambiguo-sem-qualificador-barrado", "Business Analyst", "Recife, PE", "Presencial", PERFIL_BR, False),
-    ("cargo-ambiguo-com-qualificador-passa", "Business Analyst com SQL", "Recife, PE", "Presencial", PERFIL_BR, True),
+    (
+        "cidade-fora-da-lista-barrada",
+        "Desenvolvedor Frontend",
+        "Nova York",
+        "Presencial",
+        PERFIL_BR,
+        False,
+    ),
+    (
+        "cargo-fora-do-escopo-barrado",
+        "Vendedor Externo",
+        "Recife, PE",
+        "Presencial",
+        PERFIL_BR,
+        False,
+    ),
+    (
+        "cargo-forte-cidade-aceita-passa",
+        "Desenvolvedor Frontend Pleno",
+        "Recife, PE",
+        "Presencial",
+        PERFIL_BR,
+        True,
+    ),
+    # keywords_ambiguo (ex: "Developer") só conta com qualificador de stack
+    # junto no título — sozinho é ruído de outra área (backend, mobile).
+    (
+        "cargo-ambiguo-sem-qualificador-barrado",
+        "Software Developer",
+        "Recife, PE",
+        "Presencial",
+        PERFIL_BR,
+        False,
+    ),
+    (
+        "cargo-ambiguo-com-qualificador-passa",
+        "Software Developer React",
+        "Recife, PE",
+        "Presencial",
+        PERFIL_BR,
+        True,
+    ),
 ]
 
 
@@ -170,8 +283,12 @@ CASOS_COMBINA_COM = [
 )
 def test_combina_com(nome, titulo, local, modalidade, perfil, esperado):
     job = Job(
-        titulo=titulo, empresa="Teste", local=local, link=f"https://teste.invalido/{nome}",
-        site="Teste", modalidade=modalidade,
+        titulo=titulo,
+        empresa="Teste",
+        local=local,
+        link=f"https://teste.invalido/{nome}",
+        site="Teste",
+        modalidade=modalidade,
     )
     assert job.combina_com(perfil.regras) == esperado
 
@@ -210,8 +327,12 @@ CASOS_PUBLICACAO_ANTIGA = [
 )
 def test_publicacao_antiga(nome, publicado_em, esperado):
     job = Job(
-        titulo="Analista de Dados", empresa="Teste", local="Recife, PE",
-        link=f"https://teste.invalido/{nome}", site="Teste", modalidade="Presencial",
+        titulo="Desenvolvedor Frontend",
+        empresa="Teste",
+        local="Recife, PE",
+        link=f"https://teste.invalido/{nome}",
+        site="Teste",
+        modalidade="Presencial",
         publicado_em=publicado_em,
     )
     assert job.publicacao_antiga == esperado

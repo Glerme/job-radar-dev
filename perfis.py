@@ -22,7 +22,7 @@ from config import (
     KEYWORDS,
     KEYWORDS_CARGO_FORTE,
     KEYWORDS_CARGO_AMBIGUO,
-    QUALIFICADORES_DADOS,
+    QUALIFICADORES_STACK,
     FERRAMENTAS_TITULO,
     QUALIFICADORES_CARGO,
     CIDADES,
@@ -72,6 +72,7 @@ class DefinicaoScraper:
     BR não precisa de nada extra (LinkedInScraper já traz seus países
     default de config.py), então fica com kwargs_extras vazio.
     """
+
     classe: type
     frequencia: str
     kwargs_extras: dict = field(default_factory=dict)
@@ -82,11 +83,15 @@ class Perfil:
     chave: str  # "brasil" / "internacional" — valor do --perfil e sufixo de chave em metadados
     nome: str  # nome de exibição nos logs/Telegram, ex: "Internacional"
     palavras_monitoradas: list[str]
-    paises_pesquisados: list[str] | None  # só o perfil internacional imprime isso no banner
+    paises_pesquisados: (
+        list[str] | None
+    )  # só o perfil internacional imprime isso no banner
     regras: RegrasFiltro
     regras_eixo_secundario: RegrasFiltro | None
     eixo_secundario_ativo: bool
-    eixo_secundario_rotulo: str  # usado só no texto do log ("Nova vaga exploratória (<rótulo>)")
+    eixo_secundario_rotulo: (
+        str  # usado só no texto do log ("Nova vaga exploratória (<rótulo>)")
+    )
     termos_busca: list[str]
     termos_por_ciclo: int
     definicao_scrapers: list[DefinicaoScraper]
@@ -98,7 +103,7 @@ class Perfil:
 _REGRAS_BR = RegrasFiltro(
     keywords_forte=KEYWORDS_CARGO_FORTE,
     keywords_ambiguo=KEYWORDS_CARGO_AMBIGUO,
-    qualificadores_dados=QUALIFICADORES_DADOS,
+    qualificadores_dados=QUALIFICADORES_STACK,
     ferramentas_titulo=FERRAMENTAS_TITULO,
     qualificadores_cargo=QUALIFICADORES_CARGO,
     cidades=CIDADES,
@@ -112,7 +117,7 @@ _REGRAS_BR = RegrasFiltro(
 _REGRAS_BR_IBERIA = RegrasFiltro(
     keywords_forte=KEYWORDS_CARGO_FORTE,
     keywords_ambiguo=KEYWORDS_CARGO_AMBIGUO,
-    qualificadores_dados=QUALIFICADORES_DADOS,
+    qualificadores_dados=QUALIFICADORES_STACK,
     ferramentas_titulo=FERRAMENTAS_TITULO,
     qualificadores_cargo=QUALIFICADORES_CARGO,
     cidades=CIDADES_EUROPA_IBERICA,
@@ -151,14 +156,22 @@ _REGRAS_BR_IBERIA = RegrasFiltro(
 # ainda pra essa combinação (fonte + termos em português) — FREQUENCIA_BAIXA
 # até medir rendimento real.
 _SCRAPERS_BR = [
-    DefinicaoScraper(GupyScraper, FREQUENCIA_ALTA),        # ~2,6% de rendimento
-    DefinicaoScraper(LinkedInScraper, FREQUENCIA_ALTA),     # ~8,5% — a melhor fonte de longe
-    DefinicaoScraper(SolidesScraper, FREQUENCIA_ALTA),      # ~1,1%
-    DefinicaoScraper(IndeedScraper, FREQUENCIA_ALTA),       # ~1,1%
-    DefinicaoScraper(CathoScraper, FREQUENCIA_BAIXA),       # <1%, timeout frequente em headless
+    DefinicaoScraper(GupyScraper, FREQUENCIA_ALTA),  # ~2,6% de rendimento
+    DefinicaoScraper(
+        LinkedInScraper, FREQUENCIA_ALTA
+    ),  # ~8,5% — a melhor fonte de longe
+    DefinicaoScraper(SolidesScraper, FREQUENCIA_ALTA),  # ~1,1%
+    DefinicaoScraper(IndeedScraper, FREQUENCIA_ALTA),  # ~1,1%
+    DefinicaoScraper(
+        CathoScraper, FREQUENCIA_BAIXA
+    ),  # <1%, timeout frequente em headless
     DefinicaoScraper(GeekHunterScraper, FREQUENCIA_BAIXA),  # <1%
-    DefinicaoScraper(Jobs99Scraper, FREQUENCIA_BAIXA),      # <1%, fonte confirmada funcionando
-    DefinicaoScraper(WeWorkRemotelyIntlScraper, FREQUENCIA_BAIXA),  # nova, sem medição própria
+    DefinicaoScraper(
+        Jobs99Scraper, FREQUENCIA_BAIXA
+    ),  # <1%, fonte confirmada funcionando
+    DefinicaoScraper(
+        WeWorkRemotelyIntlScraper, FREQUENCIA_BAIXA
+    ),  # nova, sem medição própria
 ]
 
 PERFIL_BR = Perfil(
@@ -212,8 +225,12 @@ _REGRAS_INTL_IBERIA = RegrasFiltro(
 # rendimento por fonte ainda que justifique separar em cadência alta/baixa
 # como o perfil BR. Ajustar quando/se tiver dado real.
 _SCRAPERS_INTL = [
-    DefinicaoScraper(LinkedInIntlScraper, FREQUENCIA_ALTA, {"locations": LOCATIONS_INTL}),
-    DefinicaoScraper(IndeedIntlScraper, FREQUENCIA_ALTA, {"dominios": DOMINIOS_INDEED_INTL}),
+    DefinicaoScraper(
+        LinkedInIntlScraper, FREQUENCIA_ALTA, {"locations": LOCATIONS_INTL}
+    ),
+    DefinicaoScraper(
+        IndeedIntlScraper, FREQUENCIA_ALTA, {"dominios": DOMINIOS_INDEED_INTL}
+    ),
     DefinicaoScraper(WeWorkRemotelyIntlScraper, FREQUENCIA_ALTA),
 ]
 
